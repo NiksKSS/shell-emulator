@@ -1,0 +1,5 @@
+ls
+cd $HOME
+ls $HOME/Documents
+unknown_command
+exit
