@@ -1,10 +1,10 @@
-# Тест Этапа 4
+# Тест Этапа 5: cp
 ls
 cd home/user
 ls
-cd ..
+cp file.txt backup.txt
 ls
-cat home/user/file.txt
-cat missing.txt
-uniq home/user/file.txt
+cp missing.txt here.txt
+cp . ../backup_folder
+ls ../backup_folder
 exit

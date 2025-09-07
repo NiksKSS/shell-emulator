@@ -176,6 +176,47 @@ def main():
                                     if line != prev:
                                         print(line)
                                         prev = line
+                    elif cmd == "cp":
+                        if len(args) < 2:
+                            print("cp: отсутствует аргумент")
+                        else:
+                            src = args[0]
+                            dst = args[1]
+
+                            src_path = src if src.startswith("/") else f"{current_path.rstrip('/')}/{src}"
+                            dst_path = dst if dst.startswith("/") else f"{current_path.rstrip('/')}/{dst}"
+
+                            dst_parent_path = "/".join(dst_path.strip("/").split("/")[:-1])
+                            dst_name = dst_path.strip("/").split("/")[-1] if dst_path.strip("/") else ""
+
+                            src_node = get_node(vfs, src_path)
+                            if src_node is None:
+                                print(f"cp: {src}: Нет такого файла или каталога")
+                                continue
+
+                            dst_parent = get_node(vfs, dst_parent_path) if dst_parent_path else vfs
+                            if dst_parent is None:
+                                print(f"cp: {dst_parent_path or '/'}: Нет такого каталога")
+                                continue
+                            if not isinstance(dst_parent, dict):
+                                print(f"cp: {dst_parent_path or '/'}: не является каталогом")
+                                continue
+
+                            dst_full_node = get_node(vfs, dst_path)
+                            if isinstance(dst_full_node, dict):
+                                src_name = src_path.strip("/").split("/")[-1]
+                                if src_name:
+                                    if src_name in dst_full_node:
+                                        print(f"cp: {dst_path}/{src_name}: файл уже существует")
+                                    else:
+                                        dst_full_node[src_name] = src_node
+                                else:
+                                    print(f"cp: невозможно определить имя файла")
+                            else:
+                                if dst_name in dst_parent:
+                                    print(f"cp: {dst_path}: файл уже существует")
+                                else:
+                                    dst_parent[dst_name] = src_node
                     else:
                         print(f"ошибка: неизвестная команда: {cmd}")
 
@@ -277,6 +318,47 @@ def main():
                             if line != prev:
                                 print(line)
                                 prev = line
+            elif cmd == "cp":
+                if len(args) < 2:
+                    print("cp: отсутствует аргумент")
+                else:
+                    src = args[0]
+                    dst = args[1]
+
+                    src_path = src if src.startswith("/") else f"{current_path.rstrip('/')}/{src}"
+                    dst_path = dst if dst.startswith("/") else f"{current_path.rstrip('/')}/{dst}"
+
+                    dst_parent_path = "/".join(dst_path.strip("/").split("/")[:-1])
+                    dst_name = dst_path.strip("/").split("/")[-1] if dst_path.strip("/") else ""
+
+                    src_node = get_node(vfs, src_path)
+                    if src_node is None:
+                        print(f"cp: {src}: Нет такого файла или каталога")
+                        continue
+
+                    dst_parent = get_node(vfs, dst_parent_path) if dst_parent_path else vfs
+                    if dst_parent is None:
+                        print(f"cp: {dst_parent_path or '/'}: Нет такого каталога")
+                        continue
+                    if not isinstance(dst_parent, dict):
+                        print(f"cp: {dst_parent_path or '/'}: не является каталогом")
+                        continue
+
+                    dst_full_node = get_node(vfs, dst_path)
+                    if isinstance(dst_full_node, dict):
+                        src_name = src_path.strip("/").split("/")[-1]
+                        if src_name:
+                            if src_name in dst_full_node:
+                                print(f"cp: {dst_path}/{src_name}: файл уже существует")
+                            else:
+                                dst_full_node[src_name] = src_node
+                        else:
+                            print(f"cp: невозможно определить имя файла")
+                    else:
+                        if dst_name in dst_parent:
+                            print(f"cp: {dst_path}: файл уже существует")
+                        else:
+                            dst_parent[dst_name] = src_node
             else:
                 print(f"ошибка: неизвестная команда: {cmd}")
 
