@@ -1,0 +1,13 @@
+{
+  "home": {
+    "user": {
+      "Documents": {
+        "text1.txt": "SGVsbG8gVlRTIQ==",
+        "image.jpg": "/9j/4AAQSkZJRgABAQEASABIAAD/2wBD"
+      }
+    }
+  },
+  "bin": {
+    "ls": "YmFzaWMgbHM="
+  }
+}

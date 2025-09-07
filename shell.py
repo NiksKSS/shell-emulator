@@ -1,6 +1,6 @@
 import os
 import sys  # для чтения аргументов командной строки
-
+import json
 
 def expand_variables(command):
     ## Заменяет $HOME, ${USER} на настоящие значения из системы
@@ -39,6 +39,16 @@ def parse_args():
 
     return vfs_path, script_path
 
+def load_vfs(path):#загрузка VFS из json
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"ошибка: файл VFS не найден: {path}")
+        return {}
+    except json.JSONDecodeError as e:
+        print(f"ошибка: некорректный JSON в VFS: {e}")
+        return {}
 
 def main():
     vfs_path, script_path = parse_args()
@@ -46,6 +56,12 @@ def main():
     print(f"[DEBUG] vfs_path = {vfs_path}")
     print(f"[DEBUG] script_path = {script_path}")
     print("-" * 40)
+    vfs = {}
+    current_path = "/"
+    if vfs_path:
+        vfs = load_vfs(vfs_path)
+        if not vfs:
+            print("VFS не загружена, система пуста.")
 
     vfs_name = "VFS"
     prompt = f"{vfs_name}$ "
