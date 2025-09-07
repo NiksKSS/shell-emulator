@@ -50,6 +50,18 @@ def load_vfs(path):#загрузка VFS из json
         print(f"ошибка: некорректный JSON в VFS: {e}")
         return {}
 
+def get_node(vfs, path):
+    if not path or path == "/":
+        return vfs
+    parts = [p for p in path.strip("/").split("/") if p]
+    current = vfs
+    for part in parts:
+        if isinstance(current, dict) and part in current:
+            current = current[part]
+        else:
+            return None
+    return current
+
 def main():
     vfs_path, script_path = parse_args()
     # Отладочный вывод переданных параметров
@@ -83,8 +95,87 @@ def main():
                     if cmd == "exit":
                         print("Выход из эмулятора.")
                         return
-                    elif cmd in ["ls", "cd"]:
-                        print(f"[заглушка] команда: {cmd}, аргументы: {args}")
+                    elif cmd == "ls":
+                        target = args[0] if args else current_path
+                        node = get_node(vfs, target)
+                        if node is None:
+                            print(f"ls: {target}: Нет такого файла или каталога")
+                        elif isinstance(node, dict):
+                            print(" ".join(node.keys()))
+                        else:
+                            print(f"ls: {target}: не каталог")
+                    elif cmd == "cd":
+                        if not args:
+                            current_path = "/"
+                        else:
+                            target = args[0]
+                            if target.startswith("/"):
+                                new_path = target
+                            else:
+                                new_path = f"{current_path.rstrip('/')}/{target}"
+
+                            parts = []
+                            for part in new_path.strip("/").split("/"):
+                                if part == "..":
+                                    if parts:
+                                        parts.pop()
+                                elif part and part != ".":
+                                    parts.append(part)
+                            resolved = "/" + "/".join(parts) if parts else "/"
+
+                            node = get_node(vfs, resolved)
+                            if node is None:
+                                print(f"cd: {target}: Нет такого файла или каталога")
+                            elif not isinstance(node, dict):
+                                print(f"cd: {target}: не является каталогом")
+                            else:
+                                current_path = resolved
+                    elif cmd == "cat":
+                        if not args:
+                            print("cat: отсутствует аргумент")
+                        else:
+                            for filename in args:
+                                full_path = filename if filename.startswith("/") else f"{current_path.rstrip('/')}/{filename}"
+                                content = get_node(vfs, full_path)
+                                if content is None:
+                                    print(f"cat: {filename}: Нет такого файла")
+                                elif isinstance(content, dict):
+                                    print(f"cat: {filename}: это каталог")
+                                else:
+                                    print(content)
+                    elif cmd == "uniq":
+                        if not args:
+                            lines = []
+                            print("Введите строки (двойной Enter для завершения):")
+                            while True:
+                                try:
+                                    line = input()
+                                    if not line:
+                                        break
+                                    lines.append(line)
+                                except EOFError:
+                                    break
+                            if lines:
+                                prev = None
+                                for line in lines:
+                                    if line != prev:
+                                        print(line)
+                                        prev = line
+                        else:
+                            filename = args[0]
+                            full_path = filename if filename.startswith("/") else f"{current_path.rstrip('/')}/{filename}"
+                            content = get_node(vfs, full_path)
+                            if content is None:
+                                print(f"uniq: {filename}: Нет такого файла")
+                            elif isinstance(content, dict):
+                                print(f"uniq: {filename}: это каталог")
+                            else:
+                                lines = content.splitlines()
+                                prev = None
+                                for line in lines:
+                                    if line != prev:
+                                        print(line)
+                                        prev = line
                     else:
                         print(f"ошибка: неизвестная команда: {cmd}")
 
@@ -105,10 +196,87 @@ def main():
 
             if cmd == "exit":
                 break
+            elif cmd == "ls":
+                target = args[0] if args else current_path
+                node = get_node(vfs, target)
+                if node is None:
+                    print(f"ls: {target}: Нет такого файла или каталога")
+                elif isinstance(node, dict):
+                    print(" ".join(node.keys()))
+                else:
+                    print(f"ls: {target}: не каталог")
+            elif cmd == "cd":
+                if not args:
+                    current_path = "/"
+                else:
+                    target = args[0]
+                    if target.startswith("/"):
+                        new_path = target
+                    else:
+                        new_path = f"{current_path.rstrip('/')}/{target}"
 
-            elif cmd in ["ls", "cd"]:
-                print(f"[заглушка] команда: {cmd}, аргументы: {args}")
+                    parts = []
+                    for part in new_path.strip("/").split("/"):
+                        if part == "..":
+                            if parts:
+                                parts.pop()
+                        elif part and part != ".":
+                            parts.append(part)
+                    resolved = "/" + "/".join(parts) if parts else "/"
 
+                    node = get_node(vfs, resolved)
+                    if node is None:
+                        print(f"cd: {target}: Нет такого файла или каталога")
+                    elif not isinstance(node, dict):
+                        print(f"cd: {target}: не является каталогом")
+                    else:
+                        current_path = resolved
+            elif cmd == "cat":
+                if not args:
+                    print("cat: отсутствует аргумент")
+                else:
+                    for filename in args:
+                        full_path = filename if filename.startswith("/") else f"{current_path.rstrip('/')}/{filename}"
+                        content = get_node(vfs, full_path)
+                        if content is None:
+                            print(f"cat: {filename}: Нет такого файла")
+                        elif isinstance(content, dict):
+                            print(f"cat: {filename}: это каталог")
+                        else:
+                            print(content)
+            elif cmd == "uniq":
+                if not args:
+                    lines = []
+                    print("Введите строки (двойной Enter для завершения):")
+                    while True:
+                        try:
+                            line = input()
+                            if not line:
+                                break
+                            lines.append(line)
+                        except EOFError:
+                            break
+                    if lines:
+                        prev = None
+                        for line in lines:
+                            if line != prev:
+                                print(line)
+                                prev = line
+                else:
+                    filename = args[0]
+                    full_path = filename if filename.startswith("/") else f"{current_path.rstrip('/')}/{filename}"
+                    content = get_node(vfs, full_path)
+                    if content is None:
+                        print(f"uniq: {filename}: Нет такого файла")
+                    elif isinstance(content, dict):
+                        print(f"uniq: {filename}: это каталог")
+                    else:
+                        lines = content.splitlines()
+                        prev = None
+                        for line in lines:
+                            if line != prev:
+                                print(line)
+                                prev = line
             else:
                 print(f"ошибка: неизвестная команда: {cmd}")
 

@@ -1,5 +1,10 @@
+# Тест Этапа 4
 ls
-cd $HOME
-ls $HOME/Documents
-unknown_command
+cd home/user
+ls
+cd ..
+ls
+cat home/user/file.txt
+cat missing.txt
+uniq home/user/file.txt
 exit
